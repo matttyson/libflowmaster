@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "flowmaster", "flowmaster.vcxproj", "{8159D738-A669-46DE-B3E3-55DDFA0F4947}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "monitor", "monitor\monitor.vcxproj", "{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "speedset", "speedset\speedset.vcxproj", "{F7F96708-F2FF-4148-8E37-96866EB3874B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Debug|Win32.Build.0 = Debug|Win32
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Debug|x64.ActiveCfg = Debug|x64
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Debug|x64.Build.0 = Debug|x64
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Release|Win32.ActiveCfg = Release|Win32
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Release|Win32.Build.0 = Release|Win32
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Release|x64.ActiveCfg = Release|x64
+		{8159D738-A669-46DE-B3E3-55DDFA0F4947}.Release|x64.Build.0 = Release|x64
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Debug|Win32.Build.0 = Debug|Win32
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Debug|x64.ActiveCfg = Debug|x64
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Debug|x64.Build.0 = Debug|x64
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Release|Win32.ActiveCfg = Release|Win32
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Release|Win32.Build.0 = Release|Win32
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Release|x64.ActiveCfg = Release|x64
+		{75FA709E-0B68-4DFF-85D0-465E6D4CC7C8}.Release|x64.Build.0 = Release|x64
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Debug|Win32.Build.0 = Debug|Win32
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Debug|x64.ActiveCfg = Debug|x64
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Debug|x64.Build.0 = Debug|x64
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Release|Win32.ActiveCfg = Release|Win32
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Release|Win32.Build.0 = Release|Win32
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Release|x64.ActiveCfg = Release|x64
+		{F7F96708-F2FF-4148-8E37-96866EB3874B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
