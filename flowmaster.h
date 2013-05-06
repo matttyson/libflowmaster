@@ -8,7 +8,18 @@ extern "C" {
 #include "flowmaster_internal.h"
 
 
-typedef struct flowmaster_s flowmaster;
+struct flowmaster_s;
+
+#ifndef __cplusplus
+	/*
+	 * The intention here is to make the 'flowmaster' typedef available
+	 * for use in C code, but not mess up the namespace for the C++ code
+	 *
+	 * If we are using C++ code, then don't expose this so we can declare
+	 * the flowmaster class.
+	 * */
+	typedef struct flowmaster_s flowmaster;
+#endif
 
 /*
 	FM_B19200  - 19200  bps
@@ -68,34 +79,34 @@ typedef enum fm_rc_e fm_rc;
 
 
 /* Create a flowmaster handle */
-DLLEXPORT flowmaster* fm_create();
+DLLEXPORT struct flowmaster_s* fm_create();
 
 /* clean up the flowmaster handle */
-DLLEXPORT void fm_destroy(flowmaster *fm);
+DLLEXPORT void fm_destroy(struct flowmaster_s *fm);
 
 /* 
  * Open the serial port 
  * port - the serial port to open.  EG "COM1" "/dev/ttyUSB0" etc
  * */
 
-DLLEXPORT fm_rc fm_connect(flowmaster *fm, const char *port);
+DLLEXPORT fm_rc fm_connect(struct flowmaster_s *fm, const char *port);
 /* Close the serial port */
-DLLEXPORT fm_rc fm_disconnect(flowmaster *fm);
+DLLEXPORT fm_rc fm_disconnect(struct flowmaster_s *fm);
 
 /* True if connected*/
-DLLEXPORT int fm_isconnected(flowmaster *fm);
+DLLEXPORT int fm_isconnected(struct flowmaster_s *fm);
 
 /* Get the current pump data */
-DLLEXPORT fm_rc fm_get_data(flowmaster *fm, fm_data *data);
+DLLEXPORT fm_rc fm_get_data(struct flowmaster_s *fm, fm_data *data);
 
 /* returns 0 if alive, -1 if error*/
-DLLEXPORT fm_rc fm_ping(flowmaster *fm);
+DLLEXPORT fm_rc fm_ping(struct flowmaster_s *fm);
 
 /* Set the cursor XY position */
-DLLEXPORT int fm_set_cursor(flowmaster *fm, int row, int col);
+DLLEXPORT int fm_set_cursor(struct flowmaster_s *fm, int row, int col);
 
 /* Print a message to the flowmaster display. max 20 chars. */
-DLLEXPORT int fm_print_message(flowmaster *fm, const char *message, int message_len);
+DLLEXPORT int fm_print_message(struct flowmaster_s *fm, const char *message, int message_len);
 
 /* 
  * Set the speed of the fans or pump.
@@ -110,13 +121,13 @@ DLLEXPORT int fm_set_fan_speed(flowmaster *fm, float duty_cycle);
 DLLEXPORT int fm_set_pump_speed(flowmaster *fm, float duty_cycle);
 
 /* Stop rotating the displays */
-DLLEXPORT int fm_halt_update_display(flowmaster *fm);
+DLLEXPORT int fm_halt_update_display(struct flowmaster_s *fm);
 
 /* Change to a given display */
-DLLEXPORT int fm_set_display(flowmaster *fm, int display);
+DLLEXPORT int fm_set_display(struct flowmaster_s *fm, int display);
 
 /* filename is a path to an intel HEX file that you want to upload to the microcontroller */
-DLLEXPORT int flash_validate_and_program(flowmaster *fm, const char *filename);
+DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *filename);
 
 #ifdef __cplusplus
 }
