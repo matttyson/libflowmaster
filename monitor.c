@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "flowmaster.h"
 
 static void print_data(fm_data *data);
 static void vary_cycle(flowmaster*);
-static double read_arg(const char *arg);
+static float read_arg(const char *arg);
+static void wait(int sec);
 
 int main(int argc, char *argv[])
 {
@@ -22,17 +26,14 @@ int main(int argc, char *argv[])
 
 	fm = fm_create();
 	rc = fm_connect(fm, port);
-	/*
-	rc = fm_set_fan_speed(fm,1.0);
-	rc = fm_set_pump_speed(fm,1.0);
-	*/
+
 	for(;;){
 		rc = fm_get_data(fm, &data);
 		if(rc != FM_OK){
 			fprintf(stderr,"Got RC %d\n",(int)rc);
 		}
 		print_data(&data);
-		Sleep(1000);
+		wait(1);
 	}
 
 	fm_disconnect(fm);
@@ -51,7 +52,7 @@ vary_cycle(flowmaster *fm)
 	for(;;){
 		fm_set_pump_speed(fm, cycle);
 		cycle += 0.05;
-		Sleep(1);
+		wait(1);
 		if(cycle >= cycle_max){
 			cycle = cycle_min;
 		}
@@ -68,7 +69,7 @@ print_data(fm_data *data)
 	printf("Ambient Temp: %0.2fc\n",data->ambient_temp);
 	printf("Fan  Speed: %d RPM\n",data->fan_rpm);
 	printf("Pump Speed: %d RPM\n",data->pump_rpm);
-	printf("Flow Rate: %d LPH\n",data->flow_rate);
+	printf("Flow Rate: %f LPH\n",data->flow_rate);
 	printf("\n");
 }
 
@@ -80,4 +81,14 @@ float read_arg(const char *arg)
 	sscanf(arg,"%d",&result);
 
 	return result / 100.0f;
+}
+
+void
+wait(int sec)
+{
+#ifdef _WIN32
+	Sleep(sec * 1000);
+#else
+	sleep(sec);
+#endif
 }
