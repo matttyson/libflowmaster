@@ -11,8 +11,6 @@
 #include "flowmaster.h"
 
 static void print_data(fm_data *data);
-static void vary_cycle(flowmaster*);
-static float read_arg(const char *arg);
 static void wait(int sec);
 
 int main(int argc, char *argv[])
@@ -20,7 +18,11 @@ int main(int argc, char *argv[])
 	flowmaster *fm;
 	fm_data data;
 	int rc;
+#ifdef _WIN32
 	const char port[] = "COM3";
+#else
+	const char port[] = "/dev/ftdi5v";
+#endif
 
 	memset(&data, 0, sizeof(fm_data));
 
@@ -43,24 +45,6 @@ int main(int argc, char *argv[])
 }
 
 void
-vary_cycle(flowmaster *fm)
-{
-	const float cycle_min = 0.3f;
-	const float cycle_max = 1.0f;
-	double cycle = cycle_min;
-
-	for(;;){
-		fm_set_pump_speed(fm, cycle);
-		cycle += 0.05;
-		wait(1);
-		if(cycle >= cycle_max){
-			cycle = cycle_min;
-		}
-	}
-}
-
-
-void
 print_data(fm_data *data)
 {
 	printf("Fan duty cycle:  %0.2f%%\n",data->fan_duty_cycle);
@@ -69,18 +53,8 @@ print_data(fm_data *data)
 	printf("Ambient Temp: %0.2fc\n",data->ambient_temp);
 	printf("Fan  Speed: %d RPM\n",data->fan_rpm);
 	printf("Pump Speed: %d RPM\n",data->pump_rpm);
-	printf("Flow Rate: %f LPH\n",data->flow_rate);
+	printf("Flow Rate: %0.2f LPH\n",data->flow_rate);
 	printf("\n");
-}
-
-
-float read_arg(const char *arg)
-{
-	int result;
-
-	sscanf(arg,"%d",&result);
-
-	return result / 100.0f;
 }
 
 void
