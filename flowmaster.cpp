@@ -2,7 +2,7 @@
 #include "flowmaster.h"
 
 flowmaster::flowmaster()
-	:m_fm(fm_create()),m_data(new fm_data)
+	:m_fm(fm_create())
 {
 
 }
@@ -11,7 +11,6 @@ flowmaster::~flowmaster()
 {
 	fm_disconnect(m_fm);
 	fm_destroy(m_fm);
-	delete m_data;
 }
 
 int flowmaster::connect(const char *port)
@@ -41,35 +40,35 @@ int flowmaster::set_pump_speed(double duty_cycle)
 
 int flowmaster::do_update()
 {
-	fm_get_data(m_fm, m_data);
+	fm_update_status(m_fm);
 }
 
 int flowmaster::fan_rpm()
 {
-	return m_data->fan_rpm;
+	return fm_fan_rpm(m_fm);
 }
 
 int flowmaster::pump_rpm()
 {
-	return m_data->pump_rpm;
+	return fm_pump_rpm(m_fm);
 }
 
 double flowmaster::ambient_temp()
 {
-	return m_data->ambient_temp;
+	return fm_ambient_temp(m_fm);
 }
 
 double flowmaster::coolant_temp()
 {
-	return m_data->coolant_temp;
+	return fm_coolant_temp(m_fm);
 }
 
 double flowmaster::fan_duty_cycle()
 {
-	return m_data->fan_duty_cycle;
+	return fm_fan_duty_cycle(m_fm);
 }
 
 double flowmaster::pump_duty_cycle()
 {
-	return m_data->pump_duty_cycle;
+	return fm_pump_duty_cycle(m_fm);
 }

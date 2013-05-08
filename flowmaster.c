@@ -147,18 +147,6 @@ fm_ping(flowmaster *fm)
 	return FM_OK;
 }
 
-int
-fm_set_fan_speed(flowmaster *fm, float duty_cycle)
-{
-	return fm_set_speed(fm, duty_cycle, PACKET_TYPE_SET_FAN);
-}
-
-int
-fm_set_pump_speed(flowmaster *fm, float duty_cycle)
-{
-	return fm_set_speed(fm, duty_cycle, PACKET_TYPE_SET_PUMP);
-}
-
 void
 fm_start_write_buffer(flowmaster *fm, int packet_type, int data_len)
 {
@@ -394,4 +382,63 @@ convert_temp_c(int adc_val)
 	temp -= 273.15;
 
 	return (float) temp;
+}
+
+/*
+ * Getter and setter routines for libflowmaster
+ *
+ */
+
+int
+fm_set_fan_speed(flowmaster *fm, float duty_cycle)
+{
+	return fm_set_speed(fm, duty_cycle, PACKET_TYPE_SET_FAN);
+}
+
+int
+fm_set_pump_speed(flowmaster *fm, float duty_cycle)
+{
+	return fm_set_speed(fm, duty_cycle, PACKET_TYPE_SET_PUMP);
+}
+
+fm_rc
+fm_update_status(flowmaster *fm)
+{
+	return fm_get_data(fm, &(fm->data));
+}
+
+float
+fm_fan_duty_cycle(flowmaster *fm)
+{
+	return fm->data.fan_duty_cycle;
+}
+
+float
+fm_pump_duty_cycle(flowmaster *fm)
+{
+	return fm->data.pump_duty_cycle;
+}
+
+float
+fm_ambient_temp(flowmaster *fm)
+{
+	return fm->data.ambient_temp;
+}
+
+float
+fm_coolant_temp(flowmaster *fm)
+{
+	return fm->data.coolant_temp;
+}
+
+int
+fm_fan_rpm(flowmaster *fm)
+{
+	return fm->data.fan_rpm;
+}
+
+int
+fm_pump_rpm(flowmaster *fm)
+{
+	return fm->data.pump_rpm;
 }

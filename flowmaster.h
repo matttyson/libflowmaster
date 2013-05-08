@@ -32,31 +32,6 @@ struct flowmaster_s;
 */
 typedef enum fm_baud_rate_e fm_baud_rate;
 
-
-
-/*
- *	Data result to return the fan status
- * */
-struct fm_data_s {
-	/* Duty cycle, a percentage between 0.0 and 1.0 */
-	float fan_duty_cycle;
-	float pump_duty_cycle;
-
-	/* Temp, in degrees celcius */
-	float ambient_temp;
-	float coolant_temp;
-
-	/* litres per hour */
-	float flow_rate;
-
-	/* Fan RPM, as a whole integer*/
-	int fan_rpm;
-	int pump_rpm;
-};
-typedef struct fm_data_s fm_data;
-
-
-
 /*
  * Flowmaster return codes
  *
@@ -76,8 +51,6 @@ enum fm_rc_e
 };
 typedef enum fm_rc_e fm_rc;
 
-
-
 /* Create a flowmaster handle */
 DLLEXPORT struct flowmaster_s* fm_create();
 
@@ -95,9 +68,6 @@ DLLEXPORT fm_rc fm_disconnect(struct flowmaster_s *fm);
 
 /* True if connected*/
 DLLEXPORT int fm_isconnected(struct flowmaster_s *fm);
-
-/* Get the current pump data */
-DLLEXPORT fm_rc fm_get_data(struct flowmaster_s *fm, fm_data *data);
 
 /* returns 0 if alive, -1 if error*/
 DLLEXPORT fm_rc fm_ping(struct flowmaster_s *fm);
@@ -128,6 +98,25 @@ DLLEXPORT int fm_set_display(struct flowmaster_s *fm, int display);
 
 /* filename is a path to an intel HEX file that you want to upload to the microcontroller */
 DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *filename);
+
+/*
+ * Query the microcontroller for it's latest status info.
+ * Don't call this more than once per 500ms
+ *
+ * */
+DLLEXPORT fm_rc fm_update_status(flowmaster *fm);
+
+/*
+ * Getter functions for fetching the status of the pump controller.
+ * Refreshed by calling fm_update_status();
+ * */
+DLLEXPORT float fm_fan_duty_cycle(flowmaster *fm);
+DLLEXPORT float fm_pump_duty_cycle(flowmaster *fm);
+DLLEXPORT float fm_ambient_temp(flowmaster *fm);
+DLLEXPORT float fm_coolant_temp(flowmaster *fm);
+
+DLLEXPORT int fm_fan_rpm(flowmaster *fm);
+DLLEXPORT int fm_pump_rpm(flowmaster *fm);
 
 #ifdef __cplusplus
 }

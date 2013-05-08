@@ -11,7 +11,11 @@ int main(int argc, char *argv[])
 	flowmaster *fm;
 	int rc;
 	double speed = 0;
+#ifdef _WIN32
 	const char port[] = "COM3";
+#else
+	const char port[] = "/dev/ftdi5v";
+#endif
 
 	if(argc >= 2){
 		speed = read_arg(argv[1]);

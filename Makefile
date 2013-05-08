@@ -1,8 +1,7 @@
 
 CC=gcc
-CFLAGS= -g -Wall -Wno-unused-variable -DFM_BUILDING_DLL  -fPIC -fvisibility=hidden
+CFLAGS= -Os -flto -Wall -Wno-unused-variable -DFM_BUILDING_DLL  -fPIC -fvisibility=hidden
 LIBS=-lm
-# -flto -fuse-linker-plugin
 
 #CFLAGS+=-DFM_DEBUG_LOGGING
 

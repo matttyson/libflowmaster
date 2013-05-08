@@ -27,7 +27,12 @@ fm_connect(flowmaster *fm, const char *port)
 		return FM_PORT_ERROR;
 	}
 
-	/* Lock the file, pretty pointless because unix locks are advisory only */
+	/* Lock the serial port, can be a bit pointless as linux locks are advisory only */
+	fl.l_type = F_WRLCK;
+	fl.l_start = 0;
+	fl.l_len = 0;
+	fl.l_whence = SEEK_SET;
+
 	fcntl(handle, F_GETLK, &fl);
 	if(fl.l_type != F_UNLCK){
 		/* File is already locked */

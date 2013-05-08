@@ -12,6 +12,11 @@ public:
 	flowmaster();
 	~flowmaster();
 
+	/*
+	 *	port is the name of the serial port we are talking to
+	 *	on linux this will be /dev/tty*.
+	 *	on windows this will be COMx
+	 * */
 	int connect(const char *port);
 	int disconnect();
 
@@ -37,6 +42,4 @@ public:
 
 private:
 	flowmaster_s *m_fm;
-	fm_data_s *m_data;
-
 };

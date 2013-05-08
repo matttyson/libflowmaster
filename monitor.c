@@ -10,13 +10,12 @@
 
 #include "flowmaster.h"
 
-static void print_data(fm_data *data);
+static void print_data(flowmaster *fm);
 static void wait(int sec);
 
 int main(int argc, char *argv[])
 {
 	flowmaster *fm;
-	fm_data data;
 	int rc;
 #ifdef _WIN32
 	const char port[] = "COM3";
@@ -24,17 +23,15 @@ int main(int argc, char *argv[])
 	const char port[] = "/dev/ftdi5v";
 #endif
 
-	memset(&data, 0, sizeof(fm_data));
-
 	fm = fm_create();
 	rc = fm_connect(fm, port);
 
 	for(;;){
-		rc = fm_get_data(fm, &data);
+		rc = fm_update_status(fm);
 		if(rc != FM_OK){
 			fprintf(stderr,"Got RC %d\n",(int)rc);
 		}
-		print_data(&data);
+		print_data(fm);
 		wait(1);
 	}
 
@@ -45,15 +42,15 @@ int main(int argc, char *argv[])
 }
 
 void
-print_data(fm_data *data)
+print_data(flowmaster *fm)
 {
-	printf("Fan duty cycle:  %0.2f%%\n",data->fan_duty_cycle);
-	printf("Pump duty cycle: %0.2f%%\n", data->pump_duty_cycle);
-	printf("Coolant Temp: %0.2fc\n",data->coolant_temp);
-	printf("Ambient Temp: %0.2fc\n",data->ambient_temp);
-	printf("Fan  Speed: %d RPM\n",data->fan_rpm);
-	printf("Pump Speed: %d RPM\n",data->pump_rpm);
-	printf("Flow Rate: %0.2f LPH\n",data->flow_rate);
+	printf("Fan duty cycle:  %0.2f%%\n",fm_fan_duty_cycle(fm));
+	printf("Pump duty cycle: %0.2f%%\n", fm_pump_duty_cycle(fm));
+	printf("Coolant Temp: %0.2fc\n",fm_coolant_temp(fm));
+	printf("Ambient Temp: %0.2fc\n",fm_ambient_temp(fm));
+	printf("Fan  Speed: %d RPM\n",fm_fan_rpm(fm));
+	printf("Pump Speed: %d RPM\n",fm_pump_rpm(fm));
+	//printf("Flow Rate: %0.2f LPH\n",fm_flow_rate(fm));
 	printf("\n");
 }
 

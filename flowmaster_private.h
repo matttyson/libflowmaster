@@ -17,6 +17,32 @@
 
 #define FM_TOP 288
 
+/*
+ *	Data result to return the fan status
+ * */
+struct fm_data_s {
+	/* Duty cycle, a percentage between 0.0 and 1.0 */
+	float fan_duty_cycle;
+	float pump_duty_cycle;
+
+	/* Temp, in degrees celcius */
+	float ambient_temp;
+	float coolant_temp;
+
+	/* litres per hour */
+	float flow_rate;
+
+	/* Fan RPM, as a whole integer*/
+	int fan_rpm;
+	int pump_rpm;
+};
+typedef struct fm_data_s fm_data;
+
+
+/* Get the current pump data */
+fm_rc fm_get_data(struct flowmaster_s *fm, fm_data *data);
+
+
 
 struct flowmaster_s
 {
@@ -25,6 +51,7 @@ struct flowmaster_s
 	unsigned char read_buffer[FM_BUFFER_SIZE];
 	int write_buffer_len; /* number of chars in the buffer */
 	int read_buffer_len; /* number of chars in the buffer */
+	fm_data data;
 };
 typedef struct flowmaster_s flowmaster;
 
