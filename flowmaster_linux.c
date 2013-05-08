@@ -37,6 +37,7 @@ fm_connect(flowmaster *fm, const char *port)
 	if(fl.l_type != F_UNLCK){
 		/* File is already locked */
 		fprintf(stdout,"file is already locked\n");
+		close(handle);
 		return FM_PORT_ERROR;
 	}
 
