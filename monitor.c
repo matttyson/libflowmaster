@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
 void
 print_data(flowmaster *fm)
 {
-	printf("Fan duty cycle:  %0.2f%%\n",fm_fan_duty_cycle(fm));
-	printf("Pump duty cycle: %0.2f%%\n", fm_pump_duty_cycle(fm));
+	printf("Fan duty cycle:  %0.2f%%\n", fm_fan_duty_cycle(fm) * 100.0);
+	printf("Pump duty cycle: %0.2f%%\n", fm_pump_duty_cycle(fm) * 100.0);
 	printf("Coolant Temp: %0.2fc\n",fm_coolant_temp(fm));
 	printf("Ambient Temp: %0.2fc\n",fm_ambient_temp(fm));
 	printf("Fan  Speed: %d RPM\n",fm_fan_rpm(fm));
