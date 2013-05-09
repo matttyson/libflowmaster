@@ -104,12 +104,13 @@ DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *fi
  * Don't call this more than once per 500ms
  *
  * */
-DLLEXPORT fm_rc fm_update_status(flowmaster *fm);
+DLLEXPORT fm_rc fm_update_status(struct flowmaster_s *fm);
 
 /*
  * Getter functions for fetching the status of the pump controller.
  * Refreshed by calling fm_update_status();
  * */
+
 DLLEXPORT float fm_fan_duty_cycle(flowmaster *fm);
 DLLEXPORT float fm_pump_duty_cycle(flowmaster *fm);
 DLLEXPORT float fm_ambient_temp(flowmaster *fm);
