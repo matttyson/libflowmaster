@@ -58,15 +58,19 @@ typedef struct flowmaster_s flowmaster;
 int fm_prev_rx_byte(flowmaster *fm, unsigned char *byte);
 
 /* Writes a block of bytes */
-int fm_serial_write(flowmaster *fm);
+int fm_serial_write(flowmaster *fm, int *written);
 /* Writes a single byte */
 int fm_serial_write_byte(flowmaster *fm, unsigned char byte);
 
-/* Reads a single byte */
+/*
+ * Reads a single byte into *byte
+ *
+ * Returns 0 if data is read
+ * nonzero on error
+ * */
 int fm_serial_read_byte(flowmaster *fm, unsigned char *byte);
 
 /* Reads from the input buffer and discards results */
-void fm_flush_input(flowmaster *fm);
 void fm_flush_buffers(flowmaster *fm);
 
 /* Get and Set the baud rate*/

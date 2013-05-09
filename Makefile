@@ -1,7 +1,11 @@
 
 CC=gcc
-CFLAGS= -Os -flto -Wall -Wno-unused-variable -DFM_BUILDING_DLL  -fPIC -fvisibility=hidden
+CFLAGS= -Wall -DFM_BUILDING_DLL  -fPIC -fvisibility=hidden
 LIBS=-lm
+
+CFLAGS+=-g
+#-Wno-unused-variable 
+OPTFLAGS=-Os -flto
 
 #CFLAGS+=-DFM_DEBUG_LOGGING
 
@@ -15,7 +19,7 @@ LIBFLOW=libflowmaster.so
 .SUFFIXES: .o .c
 .PHONY: clean
 
-all: $(LIBFLOW) monitor setspeed
+all: $(LIBFLOW) monitor setspeed testflash
 
 $(LIBFLOW): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $(LIBFLOW) -shared -Wl,-soname,$(LIBFLOW) $(OBJECTS) $(LIBS)

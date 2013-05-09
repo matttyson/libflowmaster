@@ -69,14 +69,15 @@ fm_get_data(flowmaster *fm, fm_data *data)
 {
 	int rc;
 	int temp;
+	int written;
 
 	fm_start_write_buffer(fm, PACKET_TYPE_REQUEST_STATUS, 0);
 	fm_end_write_buffer(fm);
 
 	fm_flush_buffers(fm);
 
-	rc = fm_serial_write(fm);
-	if(rc <= 0){
+	rc = fm_serial_write(fm, &written);
+	if(rc != 0){
 		return FM_WRITE_ERROR;
 	}
 	
@@ -126,13 +127,14 @@ fm_rc
 fm_ping(flowmaster *fm)
 {
 	int rc;
+	int written;
 
 	fm_start_write_buffer(fm, PACKET_TYPE_PING,0);
 	fm_end_write_buffer(fm);
 
 	fm_flush_buffers(fm);
 
-	if((rc = fm_serial_write(fm)) != 0){
+	if((rc = fm_serial_write(fm, &written)) != 0){
 		return FM_WRITE_ERROR;
 	}
 
@@ -220,6 +222,7 @@ fm_serial_read(flowmaster *fm)
 {
 	unsigned char byte;
 	unsigned char prev_byte = 0;
+	int bytes_read;
 	int rc;
 	int i;
 
@@ -231,7 +234,7 @@ fm_serial_read(flowmaster *fm)
 	
 	while(1){
 		/* keep retrying the read while zero bytes read */
-		for(i = 0; ((rc = fm_serial_read_byte(fm, &byte)) == 0) ; i++){
+		for(i = 0; ((rc = fm_serial_read_byte(fm, &byte)) != 0) ; i++){
 			if(i == 3){
 				/* Sanity timeout */
 				return -1;
@@ -242,7 +245,7 @@ fm_serial_read(flowmaster *fm)
 		fprintf(stdout,"0x%2X (%d)\n",(int)byte,(int)byte);
 #endif
 		
-		if(rc != 1){
+		if(rc != 0){
 			/* Bad read? */
 			fprintf(stderr,"Read returned %d\n",rc);
 			return -1;
@@ -323,6 +326,7 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 {
 	uint16_t cycle;
 	int rc;
+	int written;
 
 
 	if(duty_cycle > 1.0){
@@ -342,7 +346,7 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 
 	fm_flush_buffers(fm);
 
-	if((rc = fm_serial_write(fm)) == 0){
+	if((rc = fm_serial_write(fm, &written)) == 0){
 		/* Write error */
 		return FM_WRITE_ERROR;
 	}

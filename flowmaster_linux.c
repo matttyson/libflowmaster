@@ -145,7 +145,7 @@ fm_isconnected(flowmaster *fm)
  *	zero or negative if error
  * */
 int
-fm_serial_write(flowmaster *fm)
+fm_serial_write(flowmaster *fm, int *written)
 {
 #ifdef FM_DEBUG_LOGGING
 	int i;
@@ -157,18 +157,23 @@ fm_serial_write(flowmaster *fm)
 #endif
 
 	ssize_t rc = write(fm->port, fm->write_buffer, fm->write_buffer_len);
-	tcdrain(fm->port);
+
+	if(written != NULL){
+		*written = (int) rc;
+	}
+
 	if(rc != fm->write_buffer_len){
 		return -1;
 	}
-	return (int)rc;
+
+	return 0;
 }
 
 
 /*
  *	Read in from the serial port
- *	Returns number of bytes read.
- *	zero or negative on error
+ *	Returns zero on success
+ *	nonzero on failure
  *
  *	should always read a single byte.
  * */
@@ -193,28 +198,22 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 #ifdef FM_DEBUG_LOGGING
 		fprintf(stderr,"Timeout waiting on port %d\n", fm->port);
 #endif
-		return 0;
+		return -1;
 	}
 
 	if(FD_ISSET(fm->port, &fds)){
 		rc = (int) read(fm->port, byte, 1);
-		return (int)rc;
+		return 0;
 	}
 
-	assert(0);
-	return 0;
-/*
-	const ssize_t rc = read(fm->port, byte, 1);
-	return (int) rc;
-*/
+	return -1;
 }
 
 int
 fm_serial_write_byte(flowmaster *fm, unsigned char byte)
 {
-	ssize_t rc = write(fm->port, &byte, 1);
-	tcdrain(fm->port);
-	return (int) rc;
+	write(fm->port, &byte, 1);
+	return 0;
 }
 
 void

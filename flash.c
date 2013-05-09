@@ -292,20 +292,21 @@ static int
 flash_start_programming(flowmaster *fm)
 {
 	unsigned char byte = 0;
+	int rc;
 
 	fm_flush_buffers(fm);
 
 	fm_start_write_buffer(fm, PACKET_TYPE_BOOTLOADER, 0);
 	fm_end_write_buffer(fm);
-	fm_serial_write(fm);
+	fm_serial_write(fm, NULL);
 
 	/* The bootloader is hardcoded to 19200 */
 	fm_set_baudrate(fm, FM_B19200);
 
 	do {
 		fm_serial_write_byte(fm, BL_PING);
-		fm_serial_read_byte(fm, &byte);
-	} while(byte != BL_ACK);
+		rc = fm_serial_read_byte(fm, &byte);
+	} while((rc != 0) && (byte != BL_ACK));
 
 	return 0;
 }
@@ -321,7 +322,7 @@ flash_erase_chip(flowmaster *fm)
 
 	do {
 		rc = fm_serial_read_byte(fm, &byte);
-	}while(rc == 0);
+	}while(rc != 0);
 
 	if(byte != BL_ACK){
 		fprintf(stderr, "Failed to erase chip, got '%02X' expected '%02X'\n",
@@ -365,7 +366,7 @@ flash_program_address(flowmaster *fm, uint16_t address)
 
 	do {
 		rc = fm_serial_read_byte(fm, &response);
-	} while(rc == 0);
+	} while(rc != 0);
 
 	if(response != BL_ACK){
 		return -1;
@@ -387,7 +388,7 @@ flash_program_word(flowmaster *fm, uint8_t high, uint8_t low)
 	
 	do {
 		rc = fm_serial_read_byte(fm, &response);
-	} while(rc == 0);
+	} while(rc != 0);
 
 	if(response != BL_ACK){
 		return -1;
