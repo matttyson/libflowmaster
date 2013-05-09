@@ -1,4 +1,5 @@
 *.o
 monitor
 setspeed
-
+testflash
+*.exe
