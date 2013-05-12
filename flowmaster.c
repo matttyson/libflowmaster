@@ -222,7 +222,6 @@ fm_serial_read(flowmaster *fm)
 {
 	unsigned char byte;
 	unsigned char prev_byte = 0;
-	int bytes_read;
 	int rc;
 	int i;
 

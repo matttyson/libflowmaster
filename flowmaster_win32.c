@@ -113,7 +113,7 @@ fm_isconnected(flowmaster *fm)
 }
 
 int
-fm_serial_write(flowmaster *fm)
+fm_serial_write(flowmaster *fm, int *bytes_written)
 {
 	DWORD written;
 	BOOL rc;
@@ -123,7 +123,9 @@ fm_serial_write(flowmaster *fm)
 		return -1;
 	}
 
-	return (int) written;
+	*bytes_written = (int) written;
+
+	return 0;
 }
 
 int
