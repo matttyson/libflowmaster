@@ -3,3 +3,6 @@ monitor
 setspeed
 testflash
 *.exe
+*.sdf
+*.suo
+*.pdb
