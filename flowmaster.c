@@ -380,7 +380,12 @@ convert_temp_c(int adc_val)
 	const int ref_resistor = 10000;
 	double temp;
 
-	temp = log((float)((1024 * ref_resistor / adc_val) - ref_resistor));
+	/* This is a dirty hack to prevent a divide by zero */
+	if(adc_val == 0){
+		adc_val = 1;
+	}
+
+	temp = log((double)((1024 * ref_resistor / adc_val) - ref_resistor));
 	temp = 1 / (0.001129148 + (0.000234125 * temp) + (0.0000000876741 * temp * temp * temp));
 	temp -= 273.15;
 

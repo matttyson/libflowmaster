@@ -139,7 +139,7 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 		return -1;
 	}
 
-	return (int) read;
+	return 0;
 }
 
 int
