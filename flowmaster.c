@@ -111,10 +111,10 @@ fm_get_data(flowmaster *fm, fm_data *data)
 
 	/* Take raw ADC values and convert into celcius */
 	temp = (fm->read_buffer[8] << 8)  | (fm->read_buffer[9]);
-	data->coolant_temp = convert_temp_c(temp);
+	data->ambient_temp = convert_temp_c(temp);
 
 	temp = (fm->read_buffer[10] << 8) | (fm->read_buffer[11]);
-	data->ambient_temp = convert_temp_c(temp);
+	data->coolant_temp = convert_temp_c(temp);
 
 	/* Flow rate isn't used yet*/
 	//data->flow_rate = fm->read_buffer[12];
@@ -332,10 +332,8 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 		duty_cycle = 1.0;
 	}
 	else if(duty_cycle < 0.3){
-//		duty_cycle = 0.2;
+	//	duty_cycle = 0.2;
 	}
-
-	fprintf(stderr,"Setting speed to %0.2f\n",duty_cycle);
 
 	cycle = (uint16_t) (FM_TOP * duty_cycle);
 
