@@ -26,10 +26,17 @@ int main(int argc, char *argv[])
 	fm = fm_create();
 	rc = fm_connect(fm, port);
 
+	if(rc != 0){
+		fprintf(stderr,"Failed to open port!\n");
+		fm_destroy(fm);
+		return 0;
+	}
+
 	for(;;){
 		rc = fm_update_status(fm);
 		if(rc != FM_OK){
 			fprintf(stderr,"Got RC %d\n",(int)rc);
+			continue;
 		}
 		print_data(fm);
 		wait(1);
