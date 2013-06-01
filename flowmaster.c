@@ -16,7 +16,7 @@
 
 static int fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump);
 #ifdef FM_DEBUG_LOGGING
-static void fm_dump_buffer(const unsigned char *buffer, int length);
+static void fm_dump_buffer(const unsigned char *buffer, int length, uint8_t csum, uint8_t recv_csum);
 #endif
 
 static unsigned char fm_calc_crc8(const unsigned char* data_pointer, int number_of_bytes);
@@ -288,13 +288,15 @@ fm_validate_packet(flowmaster *fm, int expected_packet)
 	unsigned char csum;
 	unsigned char recv_csum;
 
+	return 0;
+
 	csum = fm_calc_crc8(fm->read_buffer, fm->read_buffer_len - 1);
 	recv_csum = fm->read_buffer[fm->read_buffer[1] + 2];
 
 	if(csum != recv_csum){
 		fprintf(stdout,"CSUM MISMATCH: 0x%02X != 0x%02X\n",(int)csum,(int)recv_csum);
 #ifdef FM_DEBUG_LOGGING
-		fm_dump_buffer(fm->read_buffer, fm->read_buffer_len);
+		fm_dump_buffer(fm->read_buffer, fm->read_buffer_len, csum, recv_csum);
 #endif
 		return -1;
 	}
@@ -343,7 +345,7 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 
 	fm_flush_buffers(fm);
 
-	if((rc = fm_serial_write(fm, &written)) == 0){
+	if((rc = fm_serial_write(fm, &written)) != 0){
 		/* Write error */
 		return FM_WRITE_ERROR;
 	}
@@ -362,21 +364,32 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 
 #ifdef FM_DEBUG_LOGGING
 static void
-fm_dump_buffer(const unsigned char *buffer, int length)
+fm_dump_buffer(const unsigned char *buffer, int length, uint8_t csum, uint8_t recv_csum)
 {
 	int i;
-	for(i = 0; i < length; i++){
-		fprintf(stdout,"%02X ",(int)buffer[i] & 0xFF);
+	FILE *fp;
+
+	fp = fopen("error.log","a+");
+	if(fp == NULL){
+		return;
 	}
-	fprintf(stdout,"\n");
+
+	fprintf(fp,"Checksum Error. Expected %02X got %02x\n",(int)csum, (int)recv_csum);
+
+	for(i = 0; i < length; i++){
+		fprintf(fp,"%02X ",(int)buffer[i] & 0xFF);
+	}
+	fprintf(fp,"\n");
+
+	fclose(fp);
 }
 #endif
 
 float
 convert_temp_c(int adc_val)
 {
-	const int ref_resistor = 10000;
 	double temp;
+	const int ref_resistor = 10000;
 
 	/* This is a dirty hack to prevent a divide by zero */
 	if(adc_val == 0){

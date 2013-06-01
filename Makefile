@@ -7,7 +7,7 @@ CFLAGS+=-g
 #-Wno-unused-variable 
 OPTFLAGS=-Os -flto
 
-#CFLAGS+=-DFM_DEBUG_LOGGING
+CFLAGS+=-DFM_DEBUG_LOGGING
 
 OBJECTS=\
 	flowmaster.o\

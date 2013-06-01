@@ -38,10 +38,6 @@ int main(int argc, char *argv[])
 	if(rc != 0){
 		fprintf(stderr,"Failed to set speed: %d\n",rc);
 	}
-	rc = fm_set_pump_speed(fm,speed);
-	if(rc != 0){
-		fprintf(stderr,"Failed to set speed: %d\n",rc);
-	}
 
 	fm_disconnect(fm);
 	fm_destroy(fm);
