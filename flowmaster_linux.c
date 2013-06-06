@@ -147,7 +147,7 @@ fm_isconnected(flowmaster *fm)
 int
 fm_serial_write(flowmaster *fm, int *written)
 {
-#ifdef FM_DEBUG_LOGGING
+#if 0
 	int i;
 	fprintf(stdout,"%s - %d bytes\n",__func__, fm->write_buffer_len);
 	

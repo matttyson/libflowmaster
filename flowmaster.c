@@ -111,10 +111,10 @@ fm_get_data(flowmaster *fm, fm_data *data)
 
 	/* Take raw ADC values and convert into celcius */
 	temp = (fm->read_buffer[8] << 8)  | (fm->read_buffer[9]);
-	data->ambient_temp = convert_temp_c(temp);
+	data->coolant_temp = convert_temp_c(temp);
 
 	temp = (fm->read_buffer[10] << 8) | (fm->read_buffer[11]);
-	data->coolant_temp = convert_temp_c(temp);
+	data->ambient_temp = convert_temp_c(temp);
 
 	/* Flow rate isn't used yet*/
 	//data->flow_rate = fm->read_buffer[12];
@@ -225,10 +225,6 @@ fm_serial_read(flowmaster *fm)
 	int rc;
 	int i;
 
-#ifdef FM_DEBUG_LOGGING
-	fprintf(stdout,"%s\n",__func__);
-#endif
-
 	fm->read_buffer_len = 0;
 	
 	while(1){
@@ -240,10 +236,6 @@ fm_serial_read(flowmaster *fm)
 			}
 		}
 
-#ifdef FM_DEBUG_LOGGING
-		fprintf(stdout,"0x%2X (%d)\n",(int)byte,(int)byte);
-#endif
-		
 		if(rc != 0){
 			/* Bad read? */
 			fprintf(stderr,"Read returned %d\n",rc);
