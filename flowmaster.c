@@ -149,17 +149,17 @@ fm_get_data(flowmaster *fm, fm_data *data)
 static fm_rc
 fm_get_top(flowmaster *fm)
 {
-    int written;
-    int rc;
+	int written;
+	int rc;
 
-    fm_start_write_buffer(fm, PACKET_TYPE_GET_TOP,0);
-    fm_end_write_buffer(fm);
-    fm_flush_buffers(fm);
+	fm_start_write_buffer(fm, PACKET_TYPE_GET_TOP,0);
+	fm_end_write_buffer(fm);
+	fm_flush_buffers(fm);
 
-    rc = fm_serial_write(fm, &written);
-    if(rc != 0) {
-        return FM_WRITE_ERROR;
-    }
+	rc = fm_serial_write(fm, &written);
+	if(rc != 0) {
+		return FM_WRITE_ERROR;
+	}
 
 	rc = fm_serial_read(fm);
 	if(rc != 0){
@@ -174,9 +174,9 @@ fm_get_top(flowmaster *fm)
 		return FM_CHECKSUM_ERROR;
 	}
 
-    fm->timer_top = ((fm->read_buffer[2] << 8) | fm->read_buffer[3]);
+	fm->timer_top = ((fm->read_buffer[2] << 8) | fm->read_buffer[3]);
 
-    return FM_OK;
+	return FM_OK;
 }
 
 
