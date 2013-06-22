@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 
 	fm = fm_create();
 	
-	rc = fm_connect(fm, "/dev/ftdi5v");
+	rc = fm_connect(fm, "/dev/ch341");
 
 	rc = flash_validate_and_program(fm,"pumpcontrol.hex");
 

@@ -143,7 +143,7 @@ fm_get_data(flowmaster *fm, fm_data *data)
 
 	/* Flow rate isn't used yet*/
 	//data->flow_rate = fm->read_buffer[12];
-	data->flow_rate = 0.0;
+	data->flow_rate = 0.0f;
 	return FM_OK;
 }
 
@@ -395,8 +395,6 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 	fm_add_word(fm, cycle);
 	fm_end_write_buffer(fm);
 
-	fm_flush_buffers(fm);
-
 	if((rc = fm_serial_write(fm, &written)) != 0){
 		/* Write error */
 		return FM_WRITE_ERROR;
@@ -413,6 +411,158 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 	
 	return FM_OK;
 }
+
+fm_rc
+fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count);
+
+fm_rc
+fm_set_fan_profile(struct flowmaster_s *fm, int *data, int length)
+{
+	int offset = 0;
+	int count = 5;
+	fm_rc rc;
+
+	if(length != FM_FAN_BUFFER_SIZE){
+		return FM_BAD_BUFFER_LENGTH;
+	}
+
+	while(offset < FM_FAN_BUFFER_SIZE) {
+
+		if((offset + count) > FM_FAN_BUFFER_SIZE){
+			count = FM_FAN_BUFFER_SIZE - offset;
+		}
+
+		rc = fm_set_fan_profile_segment(fm, data, offset, count);
+
+		if(rc != FM_OK){
+			fprintf(stderr,"Oops\n");
+			return rc;
+		}
+
+		offset += count;
+	}
+
+	return FM_OK;
+}
+
+fm_rc
+fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count)
+{
+	int i;
+	fm_rc rc;
+	const int bytes_to_send = (count * 2) + 2;
+	int *ptr = data + offset;
+	int written;
+
+	fm_start_write_buffer(fm, PACKET_TYPE_SET_FAN_PROFILE, bytes_to_send);
+	fm_add_byte(fm, (uint8_t)(count  & 0xFF));
+	fm_add_byte(fm, (uint8_t)(offset & 0xFF));
+
+	for(i = 0; i < count; i++){
+		fm_add_word(fm, (uint16_t)(*ptr & 0xFFFF));
+		printf("Word %d\n",*ptr);
+		ptr++;
+	}
+	fm_end_write_buffer(fm);
+
+	if((rc = fm_serial_write(fm, &written)) != 0){
+		return FM_WRITE_ERROR;
+	}
+
+	if((rc = fm_serial_read(fm)) != 0){
+		return FM_READ_ERROR;
+	}
+
+	if((rc = fm_validate_packet(fm, PACKET_TYPE_ACK)) != 0){
+		return FM_CHECKSUM_ERROR;
+	}
+
+	return FM_OK;
+}
+
+
+/**
+ * data - the fan speed array, must be 65 elements.
+ * length - the length of the buf, must be 65
+ *
+ *
+ */
+
+static fm_rc
+fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, int *data);
+
+fm_rc
+fm_get_fan_profile(flowmaster *fm, int *data, int length)
+{
+	int offset = 0;
+	int ctr = 0;
+
+	if(length != FM_FAN_BUFFER_SIZE) {
+		return FM_BAD_BUFFER_LENGTH;
+	}
+
+	do {
+		int received;
+		fm_get_fan_profile_segment(fm, offset, &received, data);
+		offset += received;
+		//printf(":%d\n",ctr);
+		ctr++;
+
+	} while(offset < FM_FAN_BUFFER_SIZE);
+
+	return 0;
+}
+
+fm_rc
+fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, int *data)
+{
+	int received = 0;
+	int count;
+	int i;
+	int written;
+	int ptr = 3;
+	fm_rc rc;
+	/* bytes 0 and 1 are packet type and length */
+
+	fm_start_write_buffer(fm, PACKET_TYPE_GET_FAN_PROFILE, 1);
+	fm_add_byte(fm, offset);
+	fm_end_write_buffer(fm);
+
+	rc = fm_serial_write(fm, &written);
+	if(rc != 0){
+		return FM_WRITE_ERROR;
+	}
+
+	rc = fm_serial_read(fm);
+	if(rc != 0){
+		fprintf(stderr,"serial_read: %d\n",rc);
+		return FM_READ_ERROR;
+	}
+
+	if((rc = fm_validate_packet(fm, PACKET_TYPE_GET_FAN_PROFILE)) != 0){
+		return FM_CHECKSUM_ERROR;
+	}
+
+	/* Number of items in the packet */
+	count = fm->read_buffer[2];
+	printf("Got %d\n",count);
+
+	data += offset;
+
+	for(i = 0; i < count ; i++){
+		int temp = (fm->read_buffer[ptr++] << 8);
+		temp |= fm->read_buffer[ptr++];
+		(*data) = temp;
+		data++;
+		received++;
+		//printf("%d\n",temp);
+	}
+
+	*read = received;
+
+	return FM_OK;
+}
+
 
 #ifdef FM_DEBUG_LOGGING
 static void

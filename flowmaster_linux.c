@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/select.h>
 #include <sys/file.h>
 #include <fcntl.h>
 #include <termios.h>
@@ -55,10 +56,6 @@ fm_connect_private(flowmaster *fm, const char *port)
 
 	tcgetattr(handle, &tio);
 
-	//fcntl(handle, F_SETFL, FNDELAY);
-
-	tcgetattr(handle, &tio);
-
 	tio.c_cflag |= CLOCAL | CREAD;
 
 	/* 100ms timeout */
@@ -70,15 +67,9 @@ fm_connect_private(flowmaster *fm, const char *port)
 	tio.c_cflag &= ~CSIZE;
 	tio.c_cflag |= CS8;
 
-	/* Flow control off*/
-  	tio.c_iflag &= ~(IXON | IXOFF | IXANY);
-  
-	/* Raw input, non cannonical */
-	tio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+	/* Make the handle Raw */
+	cfmakeraw(&tio);
 
-	/* Raw output */
-	tio.c_oflag &= ~OPOST;
-	
 	tcsetattr(handle, TCSANOW, &tio);
 
 	fm->port = handle;
@@ -156,6 +147,8 @@ fm_serial_write(flowmaster *fm, int *written)
 	}
 #endif
 
+	fm_flush_buffers(fm);
+
 	ssize_t rc = write(fm->port, fm->write_buffer, fm->write_buffer_len);
 
 	if(written != NULL){
@@ -182,7 +175,6 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 {
 	/* TODO: use select() to make this timeout */
 
-	int rc;
 	fd_set fds;
 	struct timeval timeout;
 
@@ -192,7 +184,7 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 	FD_ZERO(&fds);
 	FD_SET(fm->port, &fds);
 
-	rc = select(fm->port + 1, &fds, NULL, NULL, &timeout);
+	const int rc = select(fm->port + 1, &fds, NULL, NULL, &timeout);
 
 	if(rc == 0){
 #ifdef FM_DEBUG_LOGGING
@@ -200,9 +192,22 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 #endif
 		return -1;
 	}
+	else if(rc == -1){
+		fprintf(stderr,"error from port read\n");
+	}
 
 	if(FD_ISSET(fm->port, &fds)){
-		rc = (int) read(fm->port, byte, 1);
+		const ssize_t r_rc = read(fm->port, byte, 1);
+		if(r_rc < 0){
+			perror("read failed:");
+			printf("bad read\n");
+			return -1;
+		}
+		else if(r_rc == 0){
+			printf("Zero read\n");
+			return -1;
+		}
+		assert(r_rc == 1);
 		return 0;
 	}
 

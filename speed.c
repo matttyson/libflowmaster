@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	const char port[] = "COM3";
 #else
-	const char port[] = "/dev/ftdi5v";
+	const char port[] = "/dev/ttyUSB1";
 #endif
 
 	if(argc >= 2){

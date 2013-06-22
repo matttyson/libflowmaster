@@ -13,7 +13,11 @@
 	#error unsupported platform
 #endif
 
+/* The size of the TX and RX buffers when talking to the controller */
 #define FM_BUFFER_SIZE 32
+
+/* How many bytes we are expecting when setting the fan profile. */
+#define FM_FAN_BUFFER_SIZE 65
 
 /*
  *	Data result to return the fan status
@@ -30,17 +34,15 @@ struct fm_data_s {
 	/* litres per hour */
 	float flow_rate;
 
-	/* Fan RPM, as a whole integer*/
+	/* Fan RPM, as a whole integer */
 	int fan_rpm;
 	int pump_rpm;
 };
-typedef struct fm_data_s fm_data;
 
+typedef struct fm_data_s fm_data;
 
 /* Get the current pump data */
 fm_rc fm_get_data(struct flowmaster_s *fm, fm_data *data);
-
-
 
 struct flowmaster_s
 {

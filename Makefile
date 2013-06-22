@@ -3,11 +3,11 @@ CC=gcc
 CFLAGS= -Wall -DFM_BUILDING_DLL  -fPIC -fvisibility=hidden
 LIBS=-lm
 
-CFLAGS+=-g
+CFLAGS+=-g --std=gnu89 -fdiagnostics-color=always
 #-Wno-unused-variable 
 OPTFLAGS=-Os -flto
 
-#CFLAGS+=-DFM_DEBUG_LOGGING
+CFLAGS+=-DFM_DEBUG_LOGGING
 
 OBJECTS=\
 	flowmaster.o\
@@ -28,7 +28,7 @@ static: $(OBJECTS)
 	ar rcs libflowmaster_static.a $(OBJECTS)
 
 monitor: $(LIBFLOW) monitor.o
-	$(CC) -Wall -g -o $@ monitor.o -L. -lflowmaster
+	$(CC) -Wall -g -o $@ monitor.o -L. -lflowmaster_static -lm
 
 testflash: $(LIBFLOW) testflash.o
 	$(CC) -Wall -g -o $@ testflash.o -L. -lflowmaster

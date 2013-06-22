@@ -47,7 +47,8 @@ enum fm_rc_e
 	FM_PORT_ERROR,
 	FM_CHECKSUM_ERROR,
 	FM_FILE_ERROR,
-	FM_BAD_HEXFILE
+	FM_BAD_HEXFILE,
+	FM_BAD_BUFFER_LENGTH
 };
 typedef enum fm_rc_e fm_rc;
 
@@ -105,6 +106,10 @@ DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *fi
  *
  * */
 DLLEXPORT fm_rc fm_update_status(struct flowmaster_s *fm);
+
+DLLEXPORT fm_rc fm_set_fan_profile(struct flowmaster_s *fm, int *data, int length);
+DLLEXPORT fm_rc fm_get_fan_profile(struct flowmaster_s *fm, int *data, int length);
+
 
 /*
  * Getter functions for fetching the status of the pump controller.
