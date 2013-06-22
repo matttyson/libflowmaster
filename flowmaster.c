@@ -336,8 +336,6 @@ fm_validate_packet(flowmaster *fm, int expected_packet)
 	unsigned char csum;
 	unsigned char recv_csum;
 
-	return 0;
-
 	csum = fm_calc_crc8(fm->read_buffer, fm->read_buffer_len - 1);
 	recv_csum = fm->read_buffer[fm->read_buffer[1] + 2];
 
