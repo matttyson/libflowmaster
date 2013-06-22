@@ -374,6 +374,38 @@ fm_prev_rx_byte(flowmaster *fm, unsigned char *byte)
 	return 0;
 }
 
+static int
+fm_do_write(flowmaster *fm, int response)
+{
+	int written;
+	int rc;
+
+	if((rc = fm_serial_write(fm, &written)) != 0){
+		/* Write error */
+		return FM_WRITE_ERROR;
+	}
+
+	if((rc = fm_serial_read(fm)) != 0){
+		/* read error */
+		return FM_READ_ERROR;
+	}
+
+	if((rc = fm_validate_packet(fm, response)) != 0){
+		return FM_CHECKSUM_ERROR;
+	}
+
+	return FM_OK;
+}
+
+int
+fm_autoregulate(flowmaster *fm, int regulate)
+{
+	const int type = regulate ? PACKET_TYPE_AUTOMATIC : PACKET_TYPE_MANUAL;
+	fm_start_write_buffer(fm, type, 0);
+	fm_end_write_buffer(fm);
+	return fm_do_write(fm, PACKET_TYPE_ACK);
+}
+
 int
 fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 {

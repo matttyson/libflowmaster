@@ -96,6 +96,9 @@ DLLEXPORT int fm_set_cursor(struct flowmaster_s *fm, int row, int col);
 /* Print a message to the flowmaster display. max 20 chars. */
 DLLEXPORT int fm_print_message(struct flowmaster_s *fm, const char *message, int message_len);
 
+/* Enable or disable automatic regulation of fan speed.  true: auto, false manual */
+DLLEXPORT int fm_autoregulate(struct flowmaster_s *fm, int regulate);
+
 /* 
  * Set the speed of the fans or pump.
  * duty_cycle is a float between 0.0 and 1.0
@@ -103,7 +106,7 @@ DLLEXPORT int fm_print_message(struct flowmaster_s *fm, const char *message, int
  * duty cycles > 1.0 will be set to 1.0
  * duty cycles < 0.3 will be set to 0.3
  *
- * A fan or pump may never be switched off.
+ * A pump may never be switched off.
  * */
 DLLEXPORT int fm_set_fan_speed(flowmaster *fm, float duty_cycle);
 DLLEXPORT int fm_set_pump_speed(flowmaster *fm, float duty_cycle);
