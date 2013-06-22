@@ -8,6 +8,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+static __inline float roundf(float num) { return floorf(num + 0.5f ); }
 #endif
 
 #define PACKET_TYPE 0
@@ -485,7 +486,7 @@ fm_set_fan_profile_segment(flowmaster *fm, float *data, int offset, int count)
 	fm_add_byte(fm, (uint8_t)(offset & 0xFF));
 
 	for(i = 0; i < count; i++){
-		const int temp = (*ptr * fm->timer_top);
+		const int temp = (int) roundf((*ptr * fm->timer_top));
 		fm_add_word(fm, (uint16_t)(temp & 0xFFFF));
 		ptr++;
 	}

@@ -8,6 +8,11 @@
 #include "protocol.h"
 #include "bootloader_protocol.h"
 
+#ifdef _MSC_VER
+	typedef __int64 ssize_t;
+	ssize_t getline(char **buf, size_t *bufsiz, FILE *fp);
+#endif
+
 static uint8_t flash_char_to_nibble(uint8_t byte);
 static uint8_t flash_convert_byte(uint8_t high, uint8_t low);
 static uint16_t flash_convert_word(uint8_t hh, uint8_t hl, uint8_t lh, uint8_t ll);
@@ -37,7 +42,7 @@ static void flash_end_programming(flowmaster *fm);
 #define FLASH_PROGRAM_CHIP 10
 #define FLASH_VALIDATE_ONLY 20
 
-#define CALLBACK(x,y) if(cb != NULL) {cb((x),userdata,(y));}
+#define FM_CALLBACK(x,y) if(cb != NULL) {cb((x),userdata,(y));}
 
 int
 real_flash_validate_and_program(
@@ -63,14 +68,14 @@ real_flash_validate_and_program(
 	fseek(fp, 0, SEEK_SET);
 
 	if(do_program == FLASH_PROGRAM_CHIP){
-		CALLBACK(FLASH_UPDATE_BEGIN, NULL);
+		FM_CALLBACK(FLASH_UPDATE_BEGIN, NULL);
 		flash_show_program_message(fm);
 	}
 
 	while(getline(&hex_buffer, &line_length, fp) != -1){
 		/* Lines must start with : */
 		if(hex_buffer[0] != ':'){
-			CALLBACK(FLASH_VALIDATE_ERROR, NULL);
+			FM_CALLBACK(FLASH_VALIDATE_ERROR, NULL);
 			free(hex_buffer);
 			return -1;
 		}
@@ -84,7 +89,7 @@ real_flash_validate_and_program(
 				break;
 			case RECORD_TYPE_EOF:
 				if(do_program == FLASH_VALIDATE_ONLY){
-					CALLBACK(FLASH_BLOCK_COUNT, &block_count);
+					FM_CALLBACK(FLASH_BLOCK_COUNT, &block_count);
 				}
 				free(hex_buffer);
 				return 0;
@@ -106,10 +111,10 @@ real_flash_validate_and_program(
 		if(do_program == FLASH_PROGRAM_CHIP){
 			rc = flash_program_data(fm, address, data, byte_count);
 			if(rc == 0){
-				CALLBACK(FLASH_WRITE_BLOCK_OK, &block_count);
+				FM_CALLBACK(FLASH_WRITE_BLOCK_OK, &block_count);
 			}
 			else {
-				CALLBACK(FLASH_WRITE_BLOCK_ERROR, &block_count);
+				FM_CALLBACK(FLASH_WRITE_BLOCK_ERROR, &block_count);
 				free(hex_buffer);
 				return -1;
 			}
@@ -140,23 +145,23 @@ flash_validate_and_program(
 
 	fp = fopen(filename, "r");
 	if(fp == NULL){
-		CALLBACK(FLASH_OPEN_FILE_ERROR, NULL);
+		FM_CALLBACK(FLASH_OPEN_FILE_ERROR, NULL);
 		return -1;
 	}
-	CALLBACK(FLASH_OPEN_FILE_OK, NULL);
+	FM_CALLBACK(FLASH_OPEN_FILE_OK, NULL);
 
 	/* Do a validation run */
 	rc = real_flash_validate_and_program(fm,fp, FLASH_VALIDATE_ONLY , cb, userdata);
 
 	/* Abort if validation fails */
 	if(rc != 0){
-		CALLBACK(FLASH_VALIDATE_ERROR, NULL);
+		FM_CALLBACK(FLASH_VALIDATE_ERROR, NULL);
 		fclose(fp);
 		return -1;
 	}
 
 	/* Finished validation run, indicate success */
-	CALLBACK(FLASH_VALIDATE_OK, NULL);
+	FM_CALLBACK(FLASH_VALIDATE_OK, NULL);
 
 	/* Save the current baud rate, it will be changed by flash_start_programming */
 	fm_get_baudrate(fm, &oldrate);
@@ -169,20 +174,20 @@ flash_validate_and_program(
 		return -1;
 	}
 
-	CALLBACK(FLASH_ERASE_CHIP_BEGIN,NULL);
+	FM_CALLBACK(FLASH_ERASE_CHIP_BEGIN,NULL);
 	rc = flash_erase_chip(fm);
 	if(rc != 0) {
 		/* Whups, BIG PROBLEM */
-		CALLBACK(FLASH_UPDATE_ERROR, NULL);
+		FM_CALLBACK(FLASH_UPDATE_ERROR, NULL);
 		fclose(fp);
 		return -1;
 	}
-	CALLBACK(FLASH_ERASE_CHIP_OK,NULL);
+	FM_CALLBACK(FLASH_ERASE_CHIP_OK,NULL);
 
 	rc = real_flash_validate_and_program(fm,fp, FLASH_PROGRAM_CHIP, cb, userdata);
 	if(rc != 0){
 		/* Big error, oops.*/
-		CALLBACK(FLASH_UPDATE_ERROR, NULL);
+		FM_CALLBACK(FLASH_UPDATE_ERROR, NULL);
 	}
 
 	/* Reset the flowmaster */
@@ -193,7 +198,7 @@ flash_validate_and_program(
 
 	fclose(fp);
 
-	CALLBACK(FLASH_UPDATE_OK, NULL);
+	FM_CALLBACK(FLASH_UPDATE_OK, NULL);
 	
 	return rc;
 }

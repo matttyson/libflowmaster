@@ -9,6 +9,8 @@
 		#elif defined __GNUC__
 			#define DLLEXPORT __attribute__((dllexport))
 		#endif
+	#elif defined FM_STATIC
+		#define DLLEXPORT
 	#else
 		/* Win32 include*/
 		#if defined _MSC_VER
