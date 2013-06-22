@@ -19,10 +19,13 @@ LIBFLOW=libflowmaster.so
 .SUFFIXES: .o .c
 .PHONY: clean
 
-all: $(LIBFLOW) monitor setspeed testflash
+all: $(LIBFLOW) static monitor setspeed testflash
 
 $(LIBFLOW): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $(LIBFLOW) -shared -Wl,-soname,$(LIBFLOW) $(OBJECTS) $(LIBS)
+
+static: $(OBJECTS)
+	ar rcs libflowmaster_static.a $(OBJECTS)
 
 monitor: $(LIBFLOW) monitor.o
 	$(CC) -Wall -g -o $@ monitor.o -L. -lflowmaster
