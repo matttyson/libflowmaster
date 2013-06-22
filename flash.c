@@ -372,8 +372,6 @@ flash_erase_chip(flowmaster *fm)
 	}while(rc != 0);
 
 	if(byte != BL_ACK){
-		fprintf(stderr, "Failed to erase chip, got '%02X' expected '%02X'\n",
-			(int)byte, (int)BL_ACK);
 		return -1;
 	}
 

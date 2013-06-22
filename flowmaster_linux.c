@@ -37,7 +37,6 @@ fm_connect_private(flowmaster *fm, const char *port)
 	fcntl(handle, F_GETLK, &fl);
 	if(fl.l_type != F_UNLCK){
 		/* File is already locked */
-		fprintf(stdout,"file is already locked\n");
 		close(handle);
 		return FM_PORT_ERROR;
 	}
@@ -49,7 +48,6 @@ fm_connect_private(flowmaster *fm, const char *port)
 	fl.l_pid = getpid();
 
 	if(fcntl(handle, F_SETLKW, &fl) != 0){
-		fprintf(stdout,"File lock failed\n");
 		close(handle);
 		return FM_PORT_ERROR;
 	}
@@ -192,19 +190,25 @@ fm_serial_read_byte(flowmaster *fm, unsigned char *byte)
 #endif
 		return -1;
 	}
+#ifdef FM_DEBUG_LOGGING
 	else if(rc == -1){
 		fprintf(stderr,"error from port read\n");
 	}
+#endif
 
 	if(FD_ISSET(fm->port, &fds)){
 		const ssize_t r_rc = read(fm->port, byte, 1);
 		if(r_rc < 0){
+#ifdef FM_DEBUG_LOGGING
 			perror("read failed:");
 			printf("bad read\n");
+#endif
 			return -1;
 		}
 		else if(r_rc == 0){
+#ifdef FM_DEBUG_LOGGING
 			printf("Zero read\n");
+#endif
 			return -1;
 		}
 		assert(r_rc == 1);

@@ -108,12 +108,10 @@ fm_get_data(flowmaster *fm, fm_data *data)
 	
 	rc = fm_serial_read(fm);
 	if(rc != 0){
-		fprintf(stderr,"serial_read: %d\n",rc);
 		return FM_READ_ERROR;
 	}
 
 	if(fm->read_buffer_len == 0){
-		fprintf(stderr,"Zero byte response!\n");
 		return FM_READ_ERROR;
 	}
 
@@ -164,12 +162,10 @@ fm_get_top(flowmaster *fm)
 
 	rc = fm_serial_read(fm);
 	if(rc != 0){
-		fprintf(stderr,"serial_read: %d\n",rc);
 		return FM_READ_ERROR;
 	}
 
 	if(fm->read_buffer_len == 0){
-		fprintf(stderr,"Zero byte response!\n");
 		return FM_READ_ERROR;
 	}
 
@@ -298,7 +294,6 @@ fm_serial_read(flowmaster *fm)
 
 		if(rc != 0){
 			/* Bad read? */
-			fprintf(stderr,"Read returned %d\n",rc);
 			return -1;
 		}
 		
@@ -346,8 +341,8 @@ fm_validate_packet(flowmaster *fm, int expected_packet)
 	recv_csum = fm->read_buffer[fm->read_buffer[1] + 2];
 
 	if(csum != recv_csum){
-		fprintf(stdout,"CSUM MISMATCH: 0x%02X != 0x%02X\n",(int)csum,(int)recv_csum);
 #ifdef FM_DEBUG_LOGGING
+		fprintf(stdout,"CSUM MISMATCH: 0x%02X != 0x%02X\n",(int)csum,(int)recv_csum);
 		fm_dump_buffer(fm->read_buffer, fm->read_buffer_len, csum, recv_csum);
 #endif
 		return -1;
@@ -467,7 +462,6 @@ fm_set_fan_profile(struct flowmaster_s *fm, float *data, int length)
 		rc = fm_set_fan_profile_segment(fm, data, offset, count);
 
 		if(rc != FM_OK){
-			fprintf(stderr,"Oops\n");
 			return rc;
 		}
 
@@ -537,7 +531,6 @@ fm_get_fan_profile(flowmaster *fm, float *data, int length)
 		int received;
 		fm_get_fan_profile_segment(fm, offset, &received, data);
 		offset += received;
-		//printf(":%d\n",ctr);
 		ctr++;
 
 	} while(offset < FM_FAN_BUFFER_SIZE);
@@ -567,7 +560,6 @@ fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, float *data)
 
 	rc = fm_serial_read(fm);
 	if(rc != 0){
-		fprintf(stderr,"serial_read: %d\n",rc);
 		return FM_READ_ERROR;
 	}
 
@@ -577,7 +569,6 @@ fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, float *data)
 
 	/* Number of items in the packet */
 	count = fm->read_buffer[2];
-	printf("Got %d\n",count);
 
 	data += offset;
 
