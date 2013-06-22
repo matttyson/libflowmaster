@@ -52,6 +52,23 @@ enum fm_rc_e
 };
 typedef enum fm_rc_e fm_rc;
 
+enum flash_state_e
+{
+	FLASH_OPEN_FILE_OK,		/* null, file was opened ok */
+	FLASH_OPEN_FILE_ERROR,	/* null, file was not opened */
+	FLASH_BLOCK_COUNT,		/* int,  the number of blocks that will be written */
+	FLASH_WRITE_BLOCK_OK,	/* int,  the block that was written */
+	FLASH_WRITE_BLOCK_ERROR,/* int,  the block that failed validation or writing */
+	FLASH_VALIDATE_OK,		/* null, hex file was validated ok */
+	FLASH_VALIDATE_ERROR,	/* null, validation error */
+	FLASH_ERASE_CHIP_BEGIN,	/* null, begin chip erase */
+	FLASH_ERASE_CHIP_OK,	/* null, done chip erase */
+	FLASH_UPDATE_BEGIN,		/* null, starting the programming run */
+	FLASH_UPDATE_OK,		/* null, flash operation suceeded */
+	FLASH_UPDATE_ERROR		/* null, flash operation failed */
+};
+typedef enum flash_state_e flash_state;
+
 /* Create a flowmaster handle */
 DLLEXPORT struct flowmaster_s* fm_create();
 
@@ -98,7 +115,14 @@ DLLEXPORT int fm_halt_update_display(struct flowmaster_s *fm);
 DLLEXPORT int fm_set_display(struct flowmaster_s *fm, int display);
 
 /* filename is a path to an intel HEX file that you want to upload to the microcontroller */
-DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *filename);
+typedef void (*fm_flash_callback)(enum flash_state_e, void *userdata, void *data);
+
+DLLEXPORT int flash_validate_and_program(
+		struct flowmaster_s *fm,
+		const char *filename,
+		fm_flash_callback cb,
+		void *userdata
+		);
 
 /*
  * Query the microcontroller for it's latest status info.
@@ -107,8 +131,8 @@ DLLEXPORT int flash_validate_and_program(struct flowmaster_s *fm, const char *fi
  * */
 DLLEXPORT fm_rc fm_update_status(struct flowmaster_s *fm);
 
-DLLEXPORT fm_rc fm_set_fan_profile(struct flowmaster_s *fm, int *data, int length);
-DLLEXPORT fm_rc fm_get_fan_profile(struct flowmaster_s *fm, int *data, int length);
+DLLEXPORT fm_rc fm_set_fan_profile(struct flowmaster_s *fm, float *data, int length);
+DLLEXPORT fm_rc fm_get_fan_profile(struct flowmaster_s *fm, float *data, int length);
 
 
 /*

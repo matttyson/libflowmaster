@@ -412,11 +412,11 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 	return FM_OK;
 }
 
-fm_rc
-fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count);
+static fm_rc
+fm_set_fan_profile_segment(flowmaster *fm, float *data, int offset, int count);
 
 fm_rc
-fm_set_fan_profile(struct flowmaster_s *fm, int *data, int length)
+fm_set_fan_profile(struct flowmaster_s *fm, float *data, int length)
 {
 	int offset = 0;
 	int count = 5;
@@ -446,12 +446,12 @@ fm_set_fan_profile(struct flowmaster_s *fm, int *data, int length)
 }
 
 fm_rc
-fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count)
+fm_set_fan_profile_segment(flowmaster *fm, float *data, int offset, int count)
 {
 	int i;
 	fm_rc rc;
 	const int bytes_to_send = (count * 2) + 2;
-	int *ptr = data + offset;
+	float *ptr = data + offset;
 	int written;
 
 	fm_start_write_buffer(fm, PACKET_TYPE_SET_FAN_PROFILE, bytes_to_send);
@@ -459,8 +459,8 @@ fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count)
 	fm_add_byte(fm, (uint8_t)(offset & 0xFF));
 
 	for(i = 0; i < count; i++){
-		fm_add_word(fm, (uint16_t)(*ptr & 0xFFFF));
-		printf("Word %d\n",*ptr);
+		const int temp = (*ptr * fm->timer_top);
+		fm_add_word(fm, (uint16_t)(temp & 0xFFFF));
 		ptr++;
 	}
 	fm_end_write_buffer(fm);
@@ -489,10 +489,10 @@ fm_set_fan_profile_segment(flowmaster *fm, int *data, int offset, int count)
  */
 
 static fm_rc
-fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, int *data);
+fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, float *data);
 
 fm_rc
-fm_get_fan_profile(flowmaster *fm, int *data, int length)
+fm_get_fan_profile(flowmaster *fm, float *data, int length)
 {
 	int offset = 0;
 	int ctr = 0;
@@ -514,7 +514,7 @@ fm_get_fan_profile(flowmaster *fm, int *data, int length)
 }
 
 fm_rc
-fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, int *data)
+fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, float *data)
 {
 	int received = 0;
 	int count;
@@ -552,10 +552,9 @@ fm_get_fan_profile_segment(flowmaster *fm, int offset, int *read, int *data)
 	for(i = 0; i < count ; i++){
 		int temp = (fm->read_buffer[ptr++] << 8);
 		temp |= fm->read_buffer[ptr++];
-		(*data) = temp;
+		(*data) = ((float)temp / (float)fm->timer_top) ;
 		data++;
 		received++;
-		//printf("%d\n",temp);
 	}
 
 	*read = received;

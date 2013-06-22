@@ -37,28 +37,41 @@ static void flash_end_programming(flowmaster *fm);
 #define FLASH_PROGRAM_CHIP 10
 #define FLASH_VALIDATE_ONLY 20
 
+#define CALLBACK(x,y) if(cb != NULL) {cb((x),userdata,(y));}
 
 int
-real_flash_validate_and_program(flowmaster *fm, FILE *fp, int do_program)
+real_flash_validate_and_program(
+	flowmaster *fm,
+	FILE *fp,
+	int do_program,
+	fm_flash_callback cb,
+	void *userdata
+	)
 {
-	uint8_t byte_count;
+	size_t line_length = 0;
+	int block_count = 0;
+	int rc;
 	uint16_t address;
+	uint8_t byte_count;
 	uint8_t record_type;
 	uint8_t data[32]; /* The flash data in binary format */
 	uint8_t file_checksum;
 	uint8_t our_checksum;
 
-	char hex_buffer[64]; /* This is dodgy, but it should never be this big */
+	char *hex_buffer = NULL;
 
 	fseek(fp, 0, SEEK_SET);
 
 	if(do_program == FLASH_PROGRAM_CHIP){
+		CALLBACK(FLASH_UPDATE_BEGIN, NULL);
 		flash_show_program_message(fm);
 	}
 
-	while(fgets(hex_buffer, sizeof(hex_buffer), fp) != NULL){
+	while(getline(&hex_buffer, &line_length, fp) != -1){
+		/* Lines must start with : */
 		if(hex_buffer[0] != ':'){
-			/* Lines must start with : */
+			CALLBACK(FLASH_VALIDATE_ERROR, NULL);
+			free(hex_buffer);
 			return -1;
 		}
 
@@ -70,8 +83,13 @@ real_flash_validate_and_program(flowmaster *fm, FILE *fp, int do_program)
 			case RECORD_TYPE_DATA:
 				break;
 			case RECORD_TYPE_EOF:
+				if(do_program == FLASH_VALIDATE_ONLY){
+					CALLBACK(FLASH_BLOCK_COUNT, &block_count);
+				}
+				free(hex_buffer);
 				return 0;
 			default:
+				free(hex_buffer);
 				return -1;
 		}
 
@@ -81,13 +99,25 @@ real_flash_validate_and_program(flowmaster *fm, FILE *fp, int do_program)
 		our_checksum = flash_calc_checksum(byte_count, address, record_type, data);
 
 		if(our_checksum != file_checksum){
+			free(hex_buffer);
 			return -1;
 		}
 
 		if(do_program == FLASH_PROGRAM_CHIP){
-			flash_program_data(fm, address, data, byte_count);
+			rc = flash_program_data(fm, address, data, byte_count);
+			if(rc == 0){
+				CALLBACK(FLASH_WRITE_BLOCK_OK, &block_count);
+			}
+			else {
+				CALLBACK(FLASH_WRITE_BLOCK_ERROR, &block_count);
+				free(hex_buffer);
+				return -1;
+			}
 		}
+		block_count++;
 	}
+
+	free(hex_buffer);
 	return -1;
 }
 
@@ -97,7 +127,12 @@ real_flash_validate_and_program(flowmaster *fm, FILE *fp, int do_program)
  *
  * */
 int
-flash_validate_and_program(flowmaster *fm, const char *filename)
+flash_validate_and_program(
+		flowmaster *fm,
+		const char *filename,
+		fm_flash_callback cb,
+		void *userdata
+	)
 {
 	FILE *fp;
 	int rc;
@@ -105,16 +140,23 @@ flash_validate_and_program(flowmaster *fm, const char *filename)
 
 	fp = fopen(filename, "r");
 	if(fp == NULL){
+		CALLBACK(FLASH_OPEN_FILE_ERROR, NULL);
 		return -1;
 	}
+	CALLBACK(FLASH_OPEN_FILE_OK, NULL);
+
 	/* Do a validation run */
-	rc = real_flash_validate_and_program(fm, fp, FLASH_VALIDATE_ONLY);
+	rc = real_flash_validate_and_program(fm,fp, FLASH_VALIDATE_ONLY , cb, userdata);
 
 	/* Abort if validation fails */
 	if(rc != 0){
+		CALLBACK(FLASH_VALIDATE_ERROR, NULL);
 		fclose(fp);
 		return -1;
 	}
+
+	/* Finished validation run, indicate success */
+	CALLBACK(FLASH_VALIDATE_OK, NULL);
 
 	/* Save the current baud rate, it will be changed by flash_start_programming */
 	fm_get_baudrate(fm, &oldrate);
@@ -127,17 +169,20 @@ flash_validate_and_program(flowmaster *fm, const char *filename)
 		return -1;
 	}
 
-	/* TODO: Erase the chip! */
+	CALLBACK(FLASH_ERASE_CHIP_BEGIN,NULL);
 	rc = flash_erase_chip(fm);
 	if(rc != 0) {
 		/* Whups, BIG PROBLEM */
+		CALLBACK(FLASH_UPDATE_ERROR, NULL);
 		fclose(fp);
 		return -1;
 	}
+	CALLBACK(FLASH_ERASE_CHIP_OK,NULL);
 
-	rc = real_flash_validate_and_program(fm, fp, FLASH_PROGRAM_CHIP);
+	rc = real_flash_validate_and_program(fm,fp, FLASH_PROGRAM_CHIP, cb, userdata);
 	if(rc != 0){
 		/* Big error, oops.*/
+		CALLBACK(FLASH_UPDATE_ERROR, NULL);
 	}
 
 	/* Reset the flowmaster */
@@ -147,6 +192,8 @@ flash_validate_and_program(flowmaster *fm, const char *filename)
 	fm_set_baudrate(fm, oldrate);
 
 	fclose(fp);
+
+	CALLBACK(FLASH_UPDATE_OK, NULL);
 	
 	return rc;
 }
