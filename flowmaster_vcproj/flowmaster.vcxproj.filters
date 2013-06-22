@@ -27,6 +27,9 @@
     <ClCompile Include="..\flowmaster_win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\getline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\flowmaster_private.h">
