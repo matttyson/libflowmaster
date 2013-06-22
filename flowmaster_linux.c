@@ -15,7 +15,7 @@
 
 
 fm_rc
-fm_connect(flowmaster *fm, const char *port)
+fm_connect_private(flowmaster *fm, const char *port)
 {
 	serial_handle handle;
 	struct termios tio;

@@ -15,8 +15,6 @@
 
 #define FM_BUFFER_SIZE 32
 
-#define FM_TOP 288
-
 /*
  *	Data result to return the fan status
  * */
@@ -51,9 +49,12 @@ struct flowmaster_s
 	unsigned char read_buffer[FM_BUFFER_SIZE];
 	int write_buffer_len; /* number of chars in the buffer */
 	int read_buffer_len; /* number of chars in the buffer */
+	int timer_top;
 	fm_data data;
 };
 typedef struct flowmaster_s flowmaster;
+
+fm_rc fm_connect_private(flowmaster *fm, const char *port);
 
 int fm_prev_rx_byte(flowmaster *fm, unsigned char *byte);
 

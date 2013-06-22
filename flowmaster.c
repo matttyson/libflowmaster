@@ -23,6 +23,8 @@ static unsigned char fm_calc_crc8(const unsigned char* data_pointer, int number_
 /* Convert the ADC value into celcius */
 static float convert_temp_c(int adcval);
 
+static fm_rc fm_get_top(flowmaster *fm);
+
 void
 dump_rx_packet(flowmaster *fm)
 {
@@ -65,6 +67,29 @@ fm_destroy(flowmaster *fm)
 }
 
 fm_rc
+fm_connect(flowmaster *fm, const char *port)
+{
+	fm_rc rc;
+
+	rc = fm_connect_private(fm, port);
+	if(rc != FM_OK){
+	    return rc;
+	}
+
+	rc = fm_ping(fm);
+	if(rc != FM_OK) {
+	    return rc;
+	}
+
+	rc = fm_get_top(fm);
+	if(rc != FM_OK){
+		return rc;
+	}
+
+	return FM_OK;
+}
+
+fm_rc
 fm_get_data(flowmaster *fm, fm_data *data)
 {
 	int rc;
@@ -101,10 +126,10 @@ fm_get_data(flowmaster *fm, fm_data *data)
 
 	/* Convert the duty cycle back into a percentage */
 	temp = ((fm->read_buffer[2] << 8) | fm->read_buffer[3]);
-	data->fan_duty_cycle  = (float)temp / (float)FM_TOP;
+	data->fan_duty_cycle  = (float)temp / (float)fm->timer_top;
 
 	temp = (fm->read_buffer[4] << 8) | fm->read_buffer[5];
-	data->pump_duty_cycle = (float)temp / (float)FM_TOP;
+	data->pump_duty_cycle = (float)temp / (float)fm->timer_top;
 
 	data->fan_rpm  = fm->read_buffer[6] * 30;
 	data->pump_rpm = fm->read_buffer[7] * 30;
@@ -120,6 +145,41 @@ fm_get_data(flowmaster *fm, fm_data *data)
 	//data->flow_rate = fm->read_buffer[12];
 	data->flow_rate = 0.0;
 	return FM_OK;
+}
+
+static fm_rc
+fm_get_top(flowmaster *fm)
+{
+    int written;
+    int rc;
+
+    fm_start_write_buffer(fm, PACKET_TYPE_GET_TOP,0);
+    fm_end_write_buffer(fm);
+    fm_flush_buffers(fm);
+
+    rc = fm_serial_write(fm, &written);
+    if(rc != 0) {
+        return FM_WRITE_ERROR;
+    }
+
+	rc = fm_serial_read(fm);
+	if(rc != 0){
+		fprintf(stderr,"serial_read: %d\n",rc);
+		return FM_READ_ERROR;
+	}
+
+	if(fm->read_buffer_len == 0){
+		fprintf(stderr,"Zero byte response!\n");
+		return FM_READ_ERROR;
+	}
+
+	if(fm_validate_packet(fm, PACKET_TYPE_GET_TOP) != 0){
+		return FM_CHECKSUM_ERROR;
+	}
+
+    fm->timer_top = ((fm->read_buffer[2] << 8) | fm->read_buffer[3]);
+
+    return FM_OK;
 }
 
 
@@ -329,7 +389,7 @@ fm_set_speed(flowmaster *fm, float duty_cycle, int fan_or_pump)
 	//	duty_cycle = 0.2;
 	}
 
-	cycle = (uint16_t) (FM_TOP * duty_cycle);
+	cycle = (uint16_t) (fm->timer_top * duty_cycle);
 
 	fm_start_write_buffer(fm, fan_or_pump, 2);
 	fm_add_word(fm, cycle);
